@@ -1,143 +1,155 @@
-import streamlit as st
-from PIL import Image
 import os
+import argparse
+from PIL import Image
 import torch
+
 
 from transformers import (
     BlipProcessor, BlipForConditionalGeneration,
     VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 )
-
 # -------------------------
 # CONFIG
 # -------------------------
-st.set_page_config(page_title="Image Captioning", layout="centered")
-st.title("🧠 Image Caption Generator (Local Models Only)")
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# Model paths
 BLIP_PATH = "models/blip"
 VIT_PATH = "models/vit_gpt2"
 
 # -------------------------
-# Sidebar
-# -------------------------
-model_choice = st.sidebar.selectbox(
-    "Choose Model",
-    ["BLIP (Salesforce)", "ViT-GPT2 (nlpconnect)"]
-)
-
-# -------------------------
-# Helper: Check model exists
+# Helper Functions
 # -------------------------
 def is_model_available(path):
     return os.path.exists(path) and len(os.listdir(path)) > 0
 
-# -------------------------
-# Download Functions
-# -------------------------
+
 def download_blip():
+    print("⬇️ Downloading BLIP model...")
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
+    os.makedirs(BLIP_PATH, exist_ok=True)
     processor.save_pretrained(BLIP_PATH)
     model.save_pretrained(BLIP_PATH)
 
+    print("✅ BLIP model downloaded successfully")
+
+
 def download_vit():
+    print("⬇️ Downloading ViT-GPT2 model...")
     model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
     processor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
     tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 
+    os.makedirs(VIT_PATH, exist_ok=True)
     model.save_pretrained(VIT_PATH)
     processor.save_pretrained(VIT_PATH)
     tokenizer.save_pretrained(VIT_PATH)
 
-# -------------------------
-# Load Models (cached)
-# -------------------------
-@st.cache_resource
+    print("✅ ViT-GPT2 model downloaded successfully")
+
+
 def load_blip():
+    print("🚀 Loading BLIP model...")
     processor = BlipProcessor.from_pretrained(BLIP_PATH, local_files_only=True)
-    model = BlipForConditionalGeneration.from_pretrained(BLIP_PATH, local_files_only=True).to(device)
+    model = BlipForConditionalGeneration.from_pretrained(
+        BLIP_PATH, local_files_only=True
+    ).to(device)
     return processor, model
 
-@st.cache_resource
+
 def load_vit():
-    model = VisionEncoderDecoderModel.from_pretrained(VIT_PATH, local_files_only=True).to(device)
-    processor = ViTImageProcessor.from_pretrained(VIT_PATH, local_files_only=True)
-    tokenizer = AutoTokenizer.from_pretrained(VIT_PATH, local_files_only=True)
+    print("🚀 Loading ViT-GPT2 model...")
+    model = VisionEncoderDecoderModel.from_pretrained(
+        VIT_PATH, local_files_only=True
+    ).to(device)
+    processor = ViTImageProcessor.from_pretrained(
+        VIT_PATH, local_files_only=True
+    )
+    tokenizer = AutoTokenizer.from_pretrained(
+        VIT_PATH, local_files_only=True
+    )
     return model, processor, tokenizer
 
-# -------------------------
-# MODEL CHECK (TOP LOADER)
-# -------------------------
-with st.spinner("🔍 Checking model availability..."):
-    if model_choice == "BLIP (Salesforce)":
-        model_available = is_model_available(BLIP_PATH)
+
+def ensure_model(model_name):
+    path = BLIP_PATH if model_name == "blip" else VIT_PATH
+
+    print("🔍 Checking model availability...")
+    if is_model_available(path):
+        print("✅ Model found locally")
+        return
+
+    choice = input("⚠️ Model not found. Download now? (y/n): ").strip().lower()
+
+    if choice != "y":
+        print("❌ Exiting. No model loaded.")
+        exit()
+
+    if model_name == "blip":
+        download_blip()
     else:
-        model_available = is_model_available(VIT_PATH)
+        download_vit()
 
-# -------------------------
-# If NOT available
-# -------------------------
-if not model_available:
-    st.warning("⚠️ Model not found locally!")
 
-    col1, col2 = st.columns(2)
+def generate_caption(image_path, model_name):
+    if not os.path.exists(image_path):
+        print("❌ Invalid image path")
+        return
 
-    with col1:
-        if st.button("⬇️ Download Model"):
-            with st.spinner("Downloading model... please wait ⏳"):
-                os.makedirs(BLIP_PATH if model_choice.startswith("BLIP") else VIT_PATH, exist_ok=True)
+    image = Image.open(image_path).convert("RGB")
 
-                if model_choice.startswith("BLIP"):
-                    download_blip()
-                else:
-                    download_vit()
+    print("🧠 Generating caption...")
 
-            st.success("✅ Model downloaded! Reloading...")
-            st.rerun()
-
-    with col2:
-        if st.button("❌ Cancel"):
-            st.image("assets/no_model.png", caption="No model loaded 😅")
-            st.stop()
-
-    st.stop()
-
-# -------------------------
-# If AVAILABLE → Load
-# -------------------------
-with st.spinner("🚀 Loading model..."):
-    if model_choice == "BLIP (Salesforce)":
+    if model_name == "blip":
         processor, model = load_blip()
+        inputs = processor(image, return_tensors="pt").to(device)
+        output = model.generate(**inputs, max_new_tokens=30)
+        caption = processor.decode(output[0], skip_special_tokens=True)
+
     else:
         model, processor, tokenizer = load_vit()
+        pixel_values = processor(images=image, return_tensors="pt").pixel_values.to(device)
+        output_ids = model.generate(pixel_values, max_length=30)
+        caption = tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-st.success(f"✅ {model_choice} loaded successfully")
+    print("\n" + "-" * 50)
+    print("📝 Caption:")
+    print(caption)
+    print("-" * 50)
+
 
 # -------------------------
-# Upload Image
+# MAIN
 # -------------------------
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+def main():
+    parser = argparse.ArgumentParser(description="Image Caption Generator")
+    parser.add_argument("--model", choices=["blip", "vit"], help="Choose model")
+    parser.add_argument("--image", help="Path to image")
 
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    args = parser.parse_args()
 
-    if st.button("Generate Caption"):
+    # Direct mode
+    if args.model and args.image:
+        ensure_model(args.model)
+        generate_caption(args.image, args.model)
 
-        with st.spinner("🧠 Generating caption..."):
+    # Interactive mode
+    else:
+        print("\n🧠 Image Caption Generator")
+        print("1. BLIP (Salesforce)")
+        print("2. ViT-GPT2 (nlpconnect)")
 
-            if model_choice == "BLIP (Salesforce)":
-                inputs = processor(image, return_tensors="pt").to(device)
-                output = model.generate(**inputs, max_new_tokens=30)
-                caption = processor.decode(output[0], skip_special_tokens=True)
+        choice = input("Choose model (1/2): ").strip()
 
-            else:
-                pixel_values = processor(images=image, return_tensors="pt").pixel_values.to(device)
-                output_ids = model.generate(pixel_values, max_length=30)
-                caption = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        model_name = "blip" if choice == "1" else "vit"
 
-        st.success("✨ Caption Generated")
-        st.write(f"**📝 {caption}**")
+        ensure_model(model_name)
+
+        image_path = input("Enter image path: ").strip()
+
+        generate_caption(image_path, model_name)
+
+
+if __name__ == "__main__":
+    main()
