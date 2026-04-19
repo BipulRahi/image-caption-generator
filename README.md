@@ -1,229 +1,124 @@
-# 🖼️ Image Caption Generator using BLIP and ViT-GPT2
+# 🖼️ Image Caption Generator using BLIP (CLI)
 
-This project generates **natural language captions from images** using state-of-the-art pretrained vision-language models from Hugging Face.
+A lightweight **command-line image captioning project** that generates natural language descriptions from images using the pretrained **BLIP (Bootstrapping Language-Image Pretraining)** model from Hugging Face.
 
-It supports two models:
-
-- **BLIP** — Salesforce
-- **ViT-GPT2** — NLP Connect
-
-The project works in **Command Line Interface (CLI)** mode and can also be extended to UI deployment.
+This project runs **fully locally after first download** and uses **PyTorch + Transformers** for inference.
 
 ---
 
 # 🚀 Project Objective
 
-The goal of this project is to take an input image and automatically generate a textual description of the major objects and scene present in it.
+The goal of this project is to take an input image and automatically generate a meaningful textual caption describing the major objects and scene present in it.
 
-Example:
+### Example
 
-Input Image → Dog sitting on beach  
-Output →  
-`a dog sitting on the beach near the sea`
+**Input Image:** dog on grass  
+**Output Caption:**  
+`a dog running in a grassy field`
 
-This is a classic **Image Captioning** problem in Computer Vision + NLP.
-
----
-
-# 🧠 Models Used
+This is a classic **Computer Vision + NLP multimodal task**.
 
 ---
 
-## 1) BLIP (Bootstrapping Language-Image Pretraining)
+# 🧠 Model Used
 
-Model Link:  
+This project uses: 
+**BLIP – `Salesforce/blip-image-captioning-base`**
+
+Model link:  
 https://huggingface.co/Salesforce/blip-image-captioning-base
 
-Paper:  
-BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation :contentReference[oaicite:0]{index=0}
+---
+
+# 🔥 What is BLIP?
+
+BLIP stands for:
+
+**Bootstrapping Language-Image Pretraining**
+
+It is a state-of-the-art **vision-language model** designed for tasks like:
+
+- image captioning
+- visual question answering
+- image-text retrieval
+- multimodal understanding
+
+Unlike older captioning models, BLIP jointly learns:
+
+- how to understand images
+- how to generate text
+
+This makes captions more natural and context-aware.
 
 ---
 
-## 🔥 What is BLIP?
+# ⚙️ How BLIP Works (Simple Flow)
 
-BLIP is one of the most advanced image captioning models.
-
-It is designed for both:
-
-- understanding images
-- generating language
-
-Unlike older captioning systems that only focus on caption generation, BLIP is a **unified vision-language framework**. :contentReference[oaicite:1]{index=1}
+```text
+Input Image
+   ↓
+Image Preprocessing
+   ↓
+Vision Transformer Encoder
+   ↓
+Feature Embeddings
+   ↓
+Text Decoder
+   ↓
+Generated Caption
+```
 
 ---
 
-## 🧠 Simple intuition
+## 👁️ Step 1: Image Encoder
+The image is first resized and normalized.
 
-Think of BLIP as two brains working together:
-
-### 👁️ Vision Brain
-Understands image content
+Then it is split into small patches.
 
 Example:
-- dog
-- beach
-- sky
-- human
 
-This is done using a **Vision Transformer (ViT)** backbone. :contentReference[oaicite:2]{index=2}
+```text
+224 × 224 image
+→ 16 × 16 patches
+```
 
----
-
-### 📝 Language Brain
-Converts visual understanding into human-readable sentence
-
-Example:
-`a dog sitting on the beach`
-
-This is done using a transformer-based text decoder. :contentReference[oaicite:3]{index=3}
-
----
-
-## ⚙️ How BLIP Works Internally
-
----
-
-### Step 1: Image Preprocessing
-Input image is resized and normalized.
-
-Example:
-224 × 224 RGB
-
----
-
-### Step 2: Patch Creation
-The image is divided into small patches.
-
-Example:
-16 × 16 patches
-
-Exactly like words in NLP.
-
----
-
-### Step 3: Vision Transformer
-Each patch is converted into embeddings.
+These patches are converted into embeddings using a **Vision Transformer (ViT)**.
 
 This helps the model understand:
 
 - objects
-- shapes
+- colors
 - positions
-- context
+- scene context
 
 ---
 
-### Step 4: Cross-modal Fusion
-Image features are passed to text decoder.
+## 📝 Step 2: Text Decoder
+The visual embeddings are passed to the text generation decoder.
 
-This is where image + language understanding happens.
-
----
-
-### Step 5: Text Generation
-Sentence is generated token by token.
+The decoder predicts words **token by token**.
 
 Example:
 
-`a`  
-`dog`  
-`sitting`  
-`on`  
-`the`  
-`beach`
+```text
+a
+dog
+running
+in
+grass
+```
+
+This is autoregressive text generation.
 
 ---
 
-## 💡 Why BLIP is powerful
+# 💡 Why BLIP is Powerful
 
-The major contribution from the paper is:
+BLIP was trained on large-scale image-text data from the internet.
 
-### **Bootstrapping**
-BLIP generates synthetic captions and filters noisy image-text pairs from web-scale data. :contentReference[oaicite:4]{index=4}
+A major innovation is **bootstrapping**, where the model improves noisy captions by generating better synthetic text during training.
 
-This improves training quality significantly.
-
-In simple words:
-
-> Model learns from internet images + cleans noisy captions itself
-
-This was a major paper contribution.
-
----
-
----
-
-# 2) ViT-GPT2 Image Captioning
-
-Model Link:  
-https://huggingface.co/nlpconnect/vit-gpt2-image-captioning
-
-:contentReference[oaicite:5]{index=5}
-
----
-
-## 🧠 Intuition
-
-This model combines two famous architectures:
-
-- **ViT** = Vision Transformer
-- **GPT-2** = Text Generator
-
-This is a classic **Encoder-Decoder Architecture**. :contentReference[oaicite:6]{index=6}
-
----
-
-## 👁️ Encoder = ViT
-
-ViT converts image into feature vectors.
-
-Image → patches → embeddings
-
-Same as BLIP encoder idea.
-
----
-
-## 📝 Decoder = GPT-2
-
-GPT-2 generates text from image embeddings.
-
-Example:
-
-`a cat sleeping on sofa`
-
-This is auto-regressive generation.
-
-Meaning:
-
-Each next word depends on previous word.
-
----
-
-## ⚙️ Architecture Flow
-
-Image  
-↓  
-ViT Encoder  
-↓  
-Visual Embeddings  
-↓  
-GPT-2 Decoder  
-↓  
-Caption Text
-
-:contentReference[oaicite:7]{index=7}
-
----
-
-## 💡 Why use this?
-
-This is simple and very effective.
-
-Best for learning:
-
-- encoder-decoder architecture
-- multimodal AI
-- image-to-text generation
+This helps improve caption quality significantly.
 
 ---
 
@@ -231,35 +126,33 @@ Best for learning:
 
 ```text
 company/
-│── app.py          # Streamlit UI version
-│── appp.py         # CLI version
+│── app.py
 │── requirements.txt
 │── models/
-│    ├── blip/
-│    └── vit_gpt2/
+│    └── blip/
 │── assets/
 │── .gitignore
-
-
-
-# ⚙️ Installation
-
-Follow the steps below to set up and run the project locally.
+│── README.md
+```
 
 ---
 
-## 1. Clone the Repository
+# ⚙️ Installation
+
+Follow these steps to set up the project locally.
+
+---
+
+## 1. Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/image-caption-generator.git
+git clone https://github.com/BipulRahi/image-caption-generator.git
 cd image-caption-generator
 ```
 
 ---
 
-## 2. Create a Virtual Environment
-
-It is recommended to use a virtual environment to avoid dependency conflicts.
+## 2. Create Virtual Environment
 
 ### Windows
 ```bash
@@ -267,7 +160,7 @@ python -m venv cleanenv
 cleanenv\Scripts\activate
 ```
 
-### macOS / Linux
+### Linux / macOS
 ```bash
 python3 -m venv cleanenv
 source cleanenv/bin/activate
@@ -277,8 +170,6 @@ source cleanenv/bin/activate
 
 ## 3. Install Dependencies
 
-Install all required packages from `requirements.txt`.
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -287,114 +178,71 @@ pip install -r requirements.txt
 
 ## 4. Verify Installation
 
-You can verify the installed packages by running:
-
 ```bash
 pip list
 ```
 
-Expected major packages:
+Expected important packages:
 
 - torch
-- torchvision
 - transformers
 - pillow
+- torchvision
 - numpy
 
 ---
 
-# 🚀 How to Use
+# 🚀 How to Run
 
-This project supports **two modes**:
+Run the CLI application:
 
-1. **Interactive Mode**
-2. **Direct Command Mode**
+```bash
+python app.py
+```
 
 ---
 
-## 🟢 Interactive Mode
-
-Run the script without any command-line arguments.
-
-```bash
-python appp.py
-```
-
-The application will ask:
-
-- which model to use
-- image path
-- whether model needs to be downloaded
-
-Example:
+# 🖼 Example Run
 
 ```text
-🧠 Image Caption Generator
-
-Choose model:
-1. BLIP (Salesforce)
-2. ViT-GPT2 (nlpconnect)
-
-Enter choice: 1
-Enter image path: ./assets/sample.jpg
-```
-
-Output:
-
-```text
+Enter image path: ./assets/dog.jpg
+🔍 Checking model availability...
+✅ Model found locally
 🧠 Generating caption...
-
-Caption:
-a woman sitting on the beach with her dog
+------------------------------------------------------------
+a dog running in a grassy field
+------------------------------------------------------------
 ```
 
 ---
 
-## 🔵 Direct Command Mode
+# 💾 First-Time Model Download
 
-You can directly provide the model and image path.
+If the BLIP model is not available locally, the script automatically asks:
 
-### Using BLIP
-
-```bash
-python appp.py --model blip --image ./assets/sample.jpg
+```text
+⚠️ Model not found. Download now? (y/n):
 ```
+
+Press:
+
+```text
+y
+```
+
+The model will be downloaded once and saved inside:
+
+```text
+models/blip/
+```
+
+After that, future runs use the local model directly.
 
 ---
 
-### Using ViT-GPT2
+# 📂 Supported Image Formats
 
-```bash
-python appp.py --model vit --image ./assets/sample.jpg
-```
-
----
-
-## 🧠 Supported Models
-
-### BLIP
-```bash
---model blip
-```
-
-Uses:
-Salesforce/blip-image-captioning-base
-
----
-
-### ViT-GPT2
-```bash
---model vit
-```
-
-Uses:
-nlpconnect/vit-gpt2-image-captioning
-
----
-
-# 📂 Input Image Format
-
-Supported formats:
+The script supports:
 
 - `.jpg`
 - `.jpeg`
@@ -402,88 +250,83 @@ Supported formats:
 
 Example:
 
-```bash
-./assets/dog.jpg
+```text
+./asserts/sample.jpg
 ```
 
 ---
 
-# 💾 Model Download Behavior
+# 🔁 Multiple Image Testing
 
-The first time the selected model is used:
+The latest code supports repeated image caption generation in the same run.
 
-- the model is downloaded automatically
-- stored inside the `models/` folder
-- reused for future runs
-
-This avoids repeated downloads.
-
----
-
-# 🛠 Example Workflow
-
-```bash
-python appp.py --model blip --image ./assets/test.jpg
-```
-
-Expected flow:
+Example:
 
 ```text
-Checking model availability...
-Model found locally
-Loading model...
-Generating caption...
-
-Caption:
-a dog running in a grassy field
+Enter image path: ./asserts/dog.jpg
+Enter image path: ./asserts/cat.jpg
+Enter image path: exit
 ```
 
 ---
 
-# ❌ Common Errors
+# 🛠 Common Errors
 
-### Invalid image path
+---
+
+## ❌ Invalid image path
 
 ```text
-Invalid image path
+❌ Invalid image path
 ```
 
 Fix:
-Ensure the image file exists.
+Ensure the file exists.
 
-Correct example:
-
-```bash
-python appp.py --model blip --image ./assets/cat.jpg
-```
-
----
-
-### Model not found
-
-The script will automatically ask:
+Correct:
 
 ```text
-Model not found locally.
-Download now? (y/n)
+./asserts/dog.jpg
 ```
 
-Choose `y`.
+Wrong:
+
+```text
+./assets
+```
 
 ---
 
-# 🔁 Re-running the Project
+## ❌ Model download cancelled
 
-Every time you want to run again:
-
-```bash
-cleanenv\Scripts\activate
-python appp.py
+```text
+❌ Exiting. No model loaded.
 ```
 
-On Linux/macOS:
+Run again and choose:
 
-```bash
-source cleanenv/bin/activate
-python appp.py
+```text
+y
 ```
+
+---
+
+# 🧠 Tech Stack
+
+- Python
+- TORCH
+- Transformers
+- PIL
+- Vision Transformer
+- BLIP
+
+---
+
+
+# 📚 References
+
+BLIP model:  
+https://huggingface.co/Salesforce/blip-image-captioning-base
+
+BLIP paper:  
+https://arxiv.org/abs/2201.12086
