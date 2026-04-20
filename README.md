@@ -1,31 +1,50 @@
-# 🖼️ Image Caption Generator using BLIP (CLI)
+# 🖼️ Image Caption Generator using BLIP
 
-A lightweight **command-line image captioning project** that generates natural language descriptions from images using the pretrained **BLIP (Bootstrapping Language-Image Pretraining)** model from Hugging Face.
+A multimodal **Image Captioning project** built using **BLIP (Bootstrapping Language-Image Pretraining)** from Hugging Face.
 
-This project runs **fully locally after first download** and uses **PyTorch + Transformers** for inference.
+This project supports **two modes**:
+
+- 🖥️ **CLI Mode** → local terminal-based caption generation
+- 🌐 **Web App Mode** → React frontend + FastAPI backend
+
+The model automatically generates meaningful natural language captions from uploaded images.
 
 ---
 
-# 🚀 Project Objective
+# 🎥 Demo Video
 
-The goal of this project is to take an input image and automatically generate a meaningful textual caption describing the major objects and scene present in it.
+Watch the complete project demo here:
 
-### Example
+[▶️ Click to Watch Demo Video](https://github.com/BipulRahi/image-caption-generator/blob/main/w.mp4)
 
-**Input Image:** dog on grass  
-**Output Caption:**  
-`a dog running in a grassy field`
+### Demo Includes
+- CLI image caption generation
+- Frontend image upload
+- Backend health check loading
+- Caption generation flow
+- Full deployment demo
 
-This is a classic **Computer Vision + NLP multimodal task**.
+---
+
+# ✨ Features
+
+- 🧠 BLIP-based image captioning
+- 🖥️ Command Line Interface (CLI)
+- 🌐 Full-stack web application
+- ⚡ FastAPI backend API
+- 🎨 React frontend UI
+- 🔄 Backend health polling + loading states
+- ☁️ Deployment ready (Render + Vercel)
 
 ---
 
 # 🧠 Model Used
 
-This project uses: 
+This project uses:
+
 **BLIP – `Salesforce/blip-image-captioning-base`**
 
-Model link:  
+Hugging Face model:  
 https://huggingface.co/Salesforce/blip-image-captioning-base
 
 ---
@@ -36,23 +55,23 @@ BLIP stands for:
 
 **Bootstrapping Language-Image Pretraining**
 
-It is a state-of-the-art **vision-language model** designed for tasks like:
+It is a powerful **vision-language model** for tasks like:
 
 - image captioning
 - visual question answering
 - image-text retrieval
 - multimodal understanding
 
-Unlike older captioning models, BLIP jointly learns:
+BLIP combines:
 
-- how to understand images
-- how to generate text
+- image understanding using Vision Transformer
+- text generation using language decoder
 
-This makes captions more natural and context-aware.
+This allows it to produce more natural and context-aware captions.
 
 ---
 
-# ⚙️ How BLIP Works (Simple Flow)
+# ⚙️ How It Works
 
 ```text
 Input Image
@@ -61,7 +80,7 @@ Image Preprocessing
    ↓
 Vision Transformer Encoder
    ↓
-Feature Embeddings
+Visual Embeddings
    ↓
 Text Decoder
    ↓
@@ -70,97 +89,55 @@ Generated Caption
 
 ---
 
-## 👁️ Step 1: Image Encoder
-The image is first resized and normalized.
-
-Then it is split into small patches.
-
-Example:
-
-```text
-224 × 224 image
-→ 16 × 16 patches
-```
-
-These patches are converted into embeddings using a **Vision Transformer (ViT)**.
-
-This helps the model understand:
-
-- objects
-- colors
-- positions
-- scene context
-
----
-
-## 📝 Step 2: Text Decoder
-The visual embeddings are passed to the text generation decoder.
-
-The decoder predicts words **token by token**.
-
-Example:
-
-```text
-a
-dog
-running
-in
-grass
-```
-
-This is autoregressive text generation.
-
----
-
-# 💡 Why BLIP is Powerful
-
-BLIP was trained on large-scale image-text data from the internet.
-
-A major innovation is **bootstrapping**, where the model improves noisy captions by generating better synthetic text during training.
-
-This helps improve caption quality significantly.
-
----
-
 # 📁 Project Structure
 
 ```text
-company/
-│── app.py
-│── requirements.txt
-│── models/
-│    └── blip/
-│── assets/
-│── .gitignore
-│── README.md
+image-caption-generator/
+│
+├── backend/
+│   ├── main.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── app.py                # CLI application
+├── asserts/              # sample images for CLI
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-# ⚙️ Installation
+# 🖥️ CLI Application (`app.py`)
 
-Follow these steps to set up the project locally.
+The project also includes a **Command Line Interface (CLI)** version that allows image caption generation directly from the terminal without running the frontend or backend.
+
+This file is present in the **root directory** of the project.
 
 ---
 
-## 1. Clone Repository
+## 🚀 How to Run `app.py` Locally
+
+Make sure you are in the **root directory** of the project:
 
 ```bash
-git clone https://github.com/BipulRahi/image-caption-generator.git
 cd image-caption-generator
 ```
 
 ---
 
-## 2. Create Virtual Environment
+### 1️⃣ Create Virtual Environment (Recommended)
 
-### Windows
+#### Windows
 ```bash
 python -m venv cleanenv
 cleanenv\Scripts\activate
 ```
 
-### Linux / macOS
+#### Linux / macOS
 ```bash
 python3 -m venv cleanenv
 source cleanenv/bin/activate
@@ -168,7 +145,13 @@ source cleanenv/bin/activate
 
 ---
 
-## 3. Install Dependencies
+### 2️⃣ Install Dependencies
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+> If your `requirements.txt` is in the root folder, use:
 
 ```bash
 pip install -r requirements.txt
@@ -176,25 +159,7 @@ pip install -r requirements.txt
 
 ---
 
-## 4. Verify Installation
-
-```bash
-pip list
-```
-
-Expected important packages:
-
-- torch
-- transformers
-- pillow
-- torchvision
-- numpy
-
----
-
-# 🚀 How to Run
-
-Run the CLI application:
+### 3️⃣ Run the CLI Application
 
 ```bash
 python app.py
@@ -202,53 +167,30 @@ python app.py
 
 ---
 
-# 🖼 Example Run
+## 🖼 Example Run
 
 ```text
-Enter image path: ./assets/dog.jpg
-🔍 Checking model availability...
-✅ Model found locally
+Enter image path: ./asserts/dog.jpg
+
 🧠 Generating caption...
-------------------------------------------------------------
+--------------------------------------------------
 a dog running in a grassy field
-------------------------------------------------------------
+--------------------------------------------------
 ```
 
 ---
 
-# 💾 First-Time Model Download
-
-If the BLIP model is not available locally, the script automatically asks:
-
-```text
-⚠️ Model not found. Download now? (y/n):
-```
-
-Press:
-
-```text
-y
-```
-
-The model will be downloaded once and saved inside:
-
-```text
-models/blip/
-```
-
-After that, future runs use the local model directly.
-
----
-
-# 📂 Supported Image Formats
-
-The script supports:
+## 📂 Supported Image Formats
 
 - `.jpg`
 - `.jpeg`
 - `.png`
 
-Example:
+---
+
+## 📌 Sample Input Path
+
+Use images from the `asserts` folder:
 
 ```text
 ./asserts/sample.jpg
@@ -256,72 +198,178 @@ Example:
 
 ---
 
-# 🔁 Multiple Image Testing
+## 🔁 Exit CLI
 
-The latest code supports repeated image caption generation in the same run.
-
-Example:
+To stop the CLI application, type:
 
 ```text
-Enter image path: ./asserts/dog.jpg
-Enter image path: ./asserts/cat.jpg
-Enter image path: exit
+exit
+```
+
+# 🌐 Web Application
+
+The web app consists of:
+
+- **Frontend:** React + Vite
+- **Backend:** FastAPI + BLIP
+
+---
+
+# ⚙️ Backend Setup
+
+Move inside backend folder:
+
+```bash
+cd backend
 ```
 
 ---
 
-# 🛠 Common Errors
+## Create Virtual Environment
 
----
+### Windows
 
-## ❌ Invalid image path
-
-```text
-❌ Invalid image path
+```bash
+python -m venv cleanenv
+cleanenv\Scripts\activate
 ```
 
-Fix:
-Ensure the file exists.
+### Linux / macOS
 
-Correct:
-
-```text
-./asserts/dog.jpg
-```
-
-Wrong:
-
-```text
-./assets
+```bash
+python3 -m venv cleanenv
+source cleanenv/bin/activate
 ```
 
 ---
 
-## ❌ Model download cancelled
+## Install Dependencies
 
-```text
-❌ Exiting. No model loaded.
-```
-
-Run again and choose:
-
-```text
-y
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
-# 🧠 Tech Stack
+## Run Backend
+
+```bash
+python -m uvicorn main:app --reload
+```
+
+Backend runs on:
+
+```text
+http://127.0.0.1:8000
+```
+
+Health endpoint:
+
+```text
+http://127.0.0.1:8000/health
+```
+
+---
+
+# 🎨 Frontend Setup
+
+Move inside frontend:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run frontend:
+
+```bash
+npm run dev
+```
+
+Frontend runs on:
+
+```text
+http://localhost:5173
+```
+
+---
+
+# 🔄 Web App Flow
+
+```text
+Frontend starts
+   ↓
+Health polling starts
+   ↓
+Backend model loading
+   ↓
+Ready state detected
+   ↓
+Image upload
+   ↓
+Caption generation
+```
+
+---
+
+# ☁️ Deployment
+
+---
+
+## Backend → Render
+
+Deploy `backend/` folder as **Web Service**
+
+### Build Command
+
+```bash
+pip install -r requirements.txt
+```
+
+### Start Command
+
+```bash
+python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+---
+
+## Frontend → Vercel
+
+Deploy `frontend/` folder
+
+### Build Command
+
+```bash
+npm run build
+```
+
+### Output Directory
+
+```text
+dist
+```
+
+---
+
+# 🛠 Tech Stack
 
 - Python
-- TORCH
+- FastAPI
+- React
+- Vite
+- PyTorch
 - Transformers
 - PIL
-- Vision Transformer
 - BLIP
+- Vision Transformer
 
 ---
-
 
 # 📚 References
 
