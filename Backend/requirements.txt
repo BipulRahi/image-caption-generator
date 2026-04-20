@@ -4,3 +4,7 @@ transformers>=4.35.0
 pillow>=9.0.0
 numpy==1.26.4
 pyarrow
+torchvision
+fastapi
+uvicorn[standard]
+python-multipart

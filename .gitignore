@@ -1,6 +1,7 @@
 cleanenv/
 venv/
 env/
+app_copy.py
 __pycache__/
 *.pyc
 models/
@@ -10,3 +11,54 @@ models/
 Thumbs.db
 .cache/
 .huggingface/
+
+
+# =========================
+# Python Backend
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+
+# Virtual Environment
+cleanenv/
+venv/
+.env/
+.venv/
+
+# Model files / downloaded weights
+Backend/models/
+*.bin
+*.pt
+*.pth
+*.safetensors
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# =========================
+# Frontend
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Misc
+# =========================
+*.zip
